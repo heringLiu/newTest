@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.management.staff.demo.mapper.EmpDao">
+
+    <resultMap id="BaseResultMap" type="com.management.staff.demo.entity.Emp">
+        <!--@Table emp-->
+        <result property="id" column="id" jdbcType="VARCHAR"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="sex" column="sex" jdbcType="INTEGER"/>
+        <result property="age" column="age" jdbcType="INTEGER"/>
+        <result property="deptName" column="dept_name" jdbcType="INTEGER"/>
+        <result property="empDegreeName" column="emp_degree_name" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <resultMap id="ExcelResultMap" type="com.management.staff.demo.vo.CollectDataExcelVo">
+        <!--@Table emp-->
+        <result property="id" column="id" jdbcType="VARCHAR"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="sex" column="sex" jdbcType="INTEGER"/>
+        <result property="age" column="age" jdbcType="INTEGER"/>
+        <result property="dept" column="dept" jdbcType="INTEGER"/>
+        <result property="degree" column="degree" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="BaseResultMap">
+        select
+          id, name, sex, age, dept_name, emp_degree_name
+        from staff.emp
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="BaseResultMap">
+        select
+          id, name, sex, age, dept_name, emp_degree_name
+        from staff.emp
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="BaseResultMap">
+        select
+        @rownum:=@rownum+1 as num , id, e.name, case when e.sex = 1 then '男' when e.sex = 0 then '女' else '' end as sex, e.age,
+          d.dept_name as emp_dept_name, g.emp_degree_name
+        from (select @rownum := 0) as rownum,staff.emp e
+        left join dept d on e.emp_dept_code = d.dept_code
+        left join degree g on e.emp_degree_code = g.emp_degree_code
+        <where>
+            <if test="emp.name != null and emp.name != ''">
+                and e.name like "%"#{emp.name}"%"
+            </if>
+            <if test="emp.sex != null">
+                and e.sex = #{emp.sex}
+            </if>
+            <if test="emp.age != null">
+                and e.age = #{emp.age}
+            </if>
+            <if test="emp.empDeptCode != null and emp.empDeptCode !=''">
+                and e.emp_dept_code = #{emp.empDeptCode}
+            </if>
+            <if test="emp.empDegreeCode != null and emp.empDegreeCode != ''">
+                and e.emp_degree_code = #{emp.empDegreeCode}
+            </if>
+        </where>
+    </select>
+    <select id="selectPage" resultMap="BaseResultMap">
+        select
+        @rownum:=@rownum+1 as num , id, e.name, case when e.sex = 1 then '男' when e.sex = 0 then '女' else '' end as sex, e.age,
+        d.dept_name as emp_dept_name, g.emp_degree_name
+        from (select @rownum := 0) as rownum,staff.emp e
+        left join dept d on e.emp_dept_code = d.dept_code
+        left join degree g on e.emp_degree_code = g.emp_degree_code
+        <where>
+            <if test="ew.entity.name != null and ew.entity.name != ''">
+                and e.name = "%"#{ew.entity.name}"%"
+            </if>
+            <if test="ew.entity.sex != null">
+                and e.sex = #{ew.entity.sex}
+            </if>
+            <if test="ew.entity.age != null">
+                and e.age = #{ew.entity.age}
+            </if>
+            <if test="ew.entity.empDeptCode != null and ew.entity.empDeptCode !=''">
+                and e.emp_dept_code = #{ew.entity.empDeptCode}
+            </if>
+            <if test="ew.entity.empDegreeCode != null and ew.entity.empDegreeCode != ''">
+                and e.emp_degree_code = #{ew.entity.empDegreeCode}
+            </if>
+        </where>
+    </select>
+    <!--导出EXcel-->
+    <select id="queryExcel" resultMap="ExcelResultMap">
+        select id, e.name, case when e.sex = 1 then '男' when e.sex = 0 then '女' else '' end as sex, e.age,
+        d.dept_name as dept, g.emp_degree_name as degree
+        from (select @rownum := 0) as rownum,staff.emp e
+        left join dept d on e.emp_dept_code = d.dept_code
+        left join degree g on e.emp_degree_code = g.emp_degree_code
+        <where>
+            <if test="name != null and name != ''">
+                and e.name = "%"#{name}"%"
+            </if>
+            <if test="sex != null">
+                and e.sex = #{sex}
+            </if>
+            <if test="age != null">
+                and e.age = #{age}
+            </if>
+            <if test="empDeptCode != null and empDeptCode !=''">
+                and e.emp_dept_code = #{empDeptCode}
+            </if>
+            <if test="empDegreeCode != null and empDegreeCode != ''">
+                and e.emp_degree_code = #{empDegreeCode}
+            </if>
+        </where>
+    </select>
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        insert into staff.emp( name, sex, age, emp_dept_code, emp_degree_code)
+        values ( #{name}, #{sex}, #{age}, #{empDeptCode}, #{empDegreeCode})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update staff.emp
+        <set>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="sex != null">
+                sex = #{sex},
+            </if>
+            <if test="age != null">
+                age = #{age},
+            </if>
+            <if test="empDeptCode != null and empDeptCode !=''">
+                emp_dept_code = #{empDeptCode},
+            </if>
+            <if test="empDegreeCode != null and empDegreeCode != ''">
+                emp_degree_code = #{empDegreeCode},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from staff.emp where id = #{id}
+    </delete>
+
+</mapper>

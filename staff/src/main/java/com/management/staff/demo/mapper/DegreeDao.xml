@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.management.staff.demo.mapper.DegreeDao">
+
+    <resultMap id="BaseResultMap" type="com.management.staff.demo.entity.Degree">
+        <!--@Table degree-->
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="degreeName" column="degree_name" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="BaseResultMap">
+        select
+          id, degree_name
+        from staff.degree
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="BaseResultMap">
+        select
+          id, degree_name
+        from staff.degree
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="BaseResultMap">
+        select
+          emp_degree_code, emp_degree_name
+        from staff.degree
+
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        insert into staff.degree(degree_name)
+        values (#{degreeName})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update staff.degree
+        <set>
+            <if test="degreeName != null and degreeName != ''">
+                degree_name = #{degreeName},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from staff.degree where id = #{id}
+    </delete>
+
+</mapper>
